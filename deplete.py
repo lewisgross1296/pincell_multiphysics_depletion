@@ -19,7 +19,7 @@ def main(num_procs, continue_run):
 
     # full power values
     pin_power = specs.total_power / (specs.fuel_bundles * specs.pins_per_bundle)
-    time_steps = [1, 2, 2, 5, 10, 15] + [30] * 7 # short steps for transient BOL isotopes, then longer for steady operation
+    time_steps = [1, 2, 2, 5, 10, 15, 30, 30]  # short initial steps for BOL jumps
     if rank == 0:
         print(
             f"This simulation will deplete at {pin_power} W with the following time steps (units of days) {time_steps}"

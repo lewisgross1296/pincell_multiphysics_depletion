@@ -1,3 +1,7 @@
 .vscode
 *.xml
 *.csv
+*.h5
+*.txt
+__pycache__
+*.e

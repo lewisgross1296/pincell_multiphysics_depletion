@@ -5,13 +5,13 @@ import common_input as specs
 
 def build_model():
     model = openmc.Model()
-
+    dz = specs.L / specs.n_openmc_axial
     # input materials
     uo2 = openmc.Material(name="UO2 fuel at 2.4% wt enrichment")
     uo2.set_density("g/cm3", 10.29769)
     uo2.add_element("U", 1.0, enrichment=2.4)
     uo2.add_element("O", 2.0)
-    uo2.volume = np.pi * np.pow(specs.r_fuel, 2) * specs.dz
+    uo2.volume = np.pi * np.pow(specs.r_fuel, 2) * dz
 
     helium = openmc.Material(name="Helium for gap")
     helium.set_density("g/cm3", 0.001598)
@@ -45,10 +45,8 @@ def build_model():
     pin_universe = openmc.Universe(cells=[fuel_cell, gap_cell, clad_cell, water_cell])
 
     # Create a region represented as the inside of a rectangular prism
-    dz = specs.dz
-    num_layers = 10
     min = 0.0  # cm
-    max = num_layers * dz  # cm
+    max = specs.L  # cm
 
     z_min = openmc.ZPlane(z0=min, boundary_type="vacuum")
     z_max = openmc.ZPlane(z0=max, boundary_type="vacuum")
@@ -62,7 +60,7 @@ def build_model():
     lattice.pitch = (specs.pitch, specs.pitch, dz)
     lattice.universes = [
         [[pin_universe.clone(clone_regions=False, clone_materials=True)]]
-        for i in range(num_layers)
+        for i in range(specs.n_openmc_axial)
     ]
 
     model_cell = openmc.Cell(fill=lattice, region=-pin_bbox & +z_min & -z_max)
@@ -83,7 +81,12 @@ def build_model():
     upper_right = (specs.pitch / 2, specs.pitch / 2, max)
     uniform_dist = openmc.stats.Box(lower_left, upper_right)
     settings.source = openmc.IndependentSource(space=uniform_dist)
-
+    settings.output = {"summary": False}
+    settings.temperature = {
+        "default": 0.5 * (specs.inlet_T + specs.inlet_T + specs.dT),
+        "method": "interpolation",
+        "range": (290.0, 2501.0),
+    }  # h5 library contains 293 - 2500 K
     model.settings = settings
 
     return model
