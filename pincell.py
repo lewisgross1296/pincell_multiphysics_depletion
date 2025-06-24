@@ -1,4 +1,5 @@
 import openmc
+import numpy as np
 import common_input as specs
 
 
@@ -10,6 +11,7 @@ def build_model():
     uo2.set_density("g/cm3", 10.29769)
     uo2.add_element("U", 1.0, enrichment=2.4)
     uo2.add_element("O", 2.0)
+    uo2.volume = np.pi * np.pow(specs.r_fuel, 2) * specs.dz
 
     helium = openmc.Material(name="Helium for gap")
     helium.set_density("g/cm3", 0.001598)
